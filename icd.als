@@ -8,7 +8,7 @@ open util/ordering[State] as ord
 
 // =========================== System State ==================================
 // a type for storing amounts of Joules
- 
+sig Joules{}
 
 // the initial number of joules to deliver (30)
 one sig InitialJoulesToDeliver extends Joules {}
@@ -122,12 +122,12 @@ pred send_mode_on[s, s' : State] {
 pred recv_mode_on[s, s' : State] {
   some m: ModeOnMessage | m.source in s.authorised_card and 
   no s'.network and 
-  s'icd_mode = ModeOn and 
+  s'.icd_mode = ModeOn and 
   s'.impulse_mode = ModeOn and
   s'.joules_to_deliver = s.joules_to_deliver and
   s'.authorised_card = s.authorised_card and 
-  s'last_action in RecvModeOn and 
-  s'last_action.who = m.source
+  s'.last_action in RecvModeOn and 
+  s'.last_action.who = m.source
 }
 
 // Models the action in which a valid ChangeSettingsRequest message is sent
@@ -146,8 +146,8 @@ pred send_change_settings[s, s' : State] {
   s'.impulse_mode = s.impulse_mode and
   s'.joules_to_deliver = s.joules_to_deliver and
   s'.authorised_card = s.authorised_card and 
-  s'last_action in SendChangeSettings and 
-  s'last_action.who = m.source
+  s'.last_action in SendChangeSettings and 
+  s'.last_action.who = m.source
 }
 
 // Models the action in which a valid ChangeSettingsRequest message is received
@@ -169,8 +169,8 @@ pred recv_change_settings[s, s' : State] {
   s'.impulse_mode = s.impulse_mode and
   s'.joules_to_deliver = m.joules_to_deliver and
   s'.authorised_card = s.authorised_card and 
-  s'last_action in RecvChangeSettings and 
-  s'last_action.who = m.source
+  s'.last_action in RecvChangeSettings and 
+  s'.last_action.who = m.source
 }
 
 // =========================== Attacker Actions ==============================
@@ -194,6 +194,7 @@ pred recv_change_settings[s, s' : State] {
 //                last_action is AttackerAction
 //                and nothing else changes
 pred attacker_action[s, s' : State] {
+  some a: AttackerAction| a.who in s.authorised_card and 
   s'.icd_mode = s.icd_mode and
   s'.joules_to_deliver = s.joules_to_deliver and
   s'.impulse_mode = s.impulse_mode and
@@ -269,7 +270,7 @@ assert inv_always {
 
 // Check that the invariant is never violated during 15
 // state transitions
-check inv_always for 15
+check inv_always for 15 expect 0 
 // <FILL IN HERE: does the assertion hold? why / why not?>
 // NOTE: you will want to use smaller thresholds if getting
 //       counterexamples, so you can interpret them
@@ -282,7 +283,7 @@ assert unexplained_assertion {
       Patient not in s.last_action.who.roles
 }
 
-check unexplained_assertion for 5
+check unexplained_assertion for 3 expect 0 
 // <FILL IN HERE: does the assertion hold? why / why not?>
 
 // Check that the device turns on only after properly instructed to
