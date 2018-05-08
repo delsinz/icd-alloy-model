@@ -186,15 +186,16 @@ pred recv_change_settings[s, s' : State] {
 // When doing so, ensure you update the following line that describes the
 // attacker's abilities.
 //
-// Attacker's abilities: can modify network contents arbitrarily
-//                       <UPDATE HERE>
+// Attacker's abilities: can modify network contents arbitrarily (OG)
+//                       can only modify existing message on the network (MOD)
 //
-// Precondition: none
+// Precondition: a valid message must already exist on network state
 // Postcondition: network state changes in accordance with attacker's abilities
 //                last_action is AttackerAction
 //                and nothing else changes
 pred attacker_action[s, s' : State] {
-  some a: AttackerAction| a.who in s.authorised_card and 
+  //some a: AttackerAction| a.who in s.authorised_card and 
+  one s.network and no s'.network and 
   s'.icd_mode = s.icd_mode and
   s'.joules_to_deliver = s.joules_to_deliver and
   s'.impulse_mode = s.impulse_mode and
@@ -271,12 +272,13 @@ assert inv_always {
 // Check that the invariant is never violated during 15
 // state transitions
 check inv_always for 15 expect 0 
-// <FILL IN HERE: does the assertion hold? why / why not?>
+// The assertion holds.
+// Because icd and impulser must be turned on or off at the same time.
 // NOTE: you will want to use smaller thresholds if getting
 //       counterexamples, so you can interpret them
 
-// An unexplained assertion. The meaning of this assertion: Patient can 
-// not carry out RecvChangeSettings message unless it is from an attacker. 
+// An unexplained assertion. The meaning of this assertion: It is impossible that
+// a RecvChangeSettings action initiated by Patient is followed by a non-AttackerAtion 
 assert unexplained_assertion {
   all s : State | (all s' : State | s'.last_action not in AttackerAction) =>
       s.last_action in RecvChangeSettings =>
@@ -284,23 +286,28 @@ assert unexplained_assertion {
 }
 
 check unexplained_assertion for 3 expect 0 
-// <FILL IN HERE: does the assertion hold? why / why not?>
+// The assertion does not hold.
+// Because the system does not have constraint on Patient's ability to carry out
+// RecvChangeSettings action.
 
 // Check that the device turns on only after properly instructed to
-// i.e. that the SendModeOn action occurs only after a RecvModeOn action has occurred
+// i.e. that the RecvModeOn action occurs only after a SendModeOn action has occurred
 assert turns_on_safe {
-  // <FILL IN HERE>
+  all s:State | (s.last_action in SendModeOn => (all s':ord/next[s] | s'.last_action in RecvModeOn))
 }
 
 // NOTE: you may want to adjust these thresholds for your own use
 check turns_on_safe for 5 but 8 State
-// <FILL IN HERE: does the assertion hold in the updated attacker model in which
-// the attacker cannot guess Principal ids? why / why not?>
-// what additional restrictions need to be added to the attacker model?
+// The assertion does not hold.
+// Because it is possible that an attacker would intercept ModeOnMessage and alter its action
+// before RecvModeOn action happens.
+
+// Additional restrictions on attacker_action:
+// Define a set of finite valid actions in the system. Restrict certain actions to certain roles. 
 
 // Attacks still permitted by the updated attacker model:
-// 
-// <FILL IN HERE>
+// Attacker can still intercept network messages, and prevent the supposed receiving ends
+// from receiving certain messages, thus preventing them from initiating certain actions.
 
 
 // Relationship to our HAZOP study:
