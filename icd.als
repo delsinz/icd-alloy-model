@@ -1,9 +1,9 @@
 // ===========================================================================
 // SWEN90010 2018 - Assignment 3 Submission
-// by <PUT YOUR NAMES HERE>
+// by Mingyang Zhang, Yang Xiong
 // ===========================================================================
 
-module ebs
+module icd
 open util/ordering[State] as ord
 
 // =========================== System State ==================================
@@ -196,7 +196,8 @@ pred recv_change_settings[s, s' : State] {
 //                and nothing else changes
 pred attacker_action[s, s' : State] {
   //some a: AttackerAction| a.who in s.authorised_card and 
-  one s.network and no s'.network and 
+  one s.network and 
+  s.network.source = s'.network.source and
   s'.icd_mode = s.icd_mode and
   s'.joules_to_deliver = s.joules_to_deliver and
   s'.impulse_mode = s.impulse_mode and
@@ -294,9 +295,8 @@ check unexplained_assertion for 3 expect 0
 // Check that the device turns on only after properly instructed to
 // i.e. that the RecvModeOn action occurs only after a SendModeOn action has occurred
 assert turns_on_safe {
-  all s':State | (s'.last_action in RecvModeOn => (some s:ord/prevs[s] | s.last_action in SendModeOn))
+  all s':State | (s'.last_action in RecvModeOn => (some s:ord/prevs[s'] | s.last_action in SendModeOn))
 }
-
 // NOTE: you may want to adjust these thresholds for your own use
 check turns_on_safe for 5 but 8 State
 // The assertion does not hold.
