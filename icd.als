@@ -121,6 +121,7 @@ pred send_mode_on[s, s' : State] {
 //                and nothing else changes
 pred recv_mode_on[s, s' : State] {
   some m: ModeOnMessage | m.source in s.authorised_card and 
+  s.icd_mode = ModeOff and s.impulse_mode = ModeOff and 
   no s'.network and 
   s'.icd_mode = ModeOn and 
   s'.impulse_mode = ModeOn and
@@ -293,7 +294,7 @@ check unexplained_assertion for 3 expect 0
 // Check that the device turns on only after properly instructed to
 // i.e. that the RecvModeOn action occurs only after a SendModeOn action has occurred
 assert turns_on_safe {
-  all s:State | (s.last_action in SendModeOn => (all s':ord/next[s] | s'.last_action in RecvModeOn))
+  all s':State | (s'.last_action in RecvModeOn => (some s:ord/prevs[s] | s.last_action in SendModeOn))
 }
 
 // NOTE: you may want to adjust these thresholds for your own use
