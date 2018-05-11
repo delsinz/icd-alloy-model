@@ -195,7 +195,6 @@ pred recv_change_settings[s, s' : State] {
 //                last_action is AttackerAction
 //                and nothing else changes
 pred attacker_action[s, s' : State] {
-  //some a: AttackerAction| a.who in s.authorised_card and 
   one s.network and 
   s.network.source = s'.network.source and
   s'.icd_mode = s.icd_mode and
@@ -313,4 +312,23 @@ check turns_on_safe for 5 but 8 State
 
 // Relationship to our HAZOP study:
 //
-// <FILL IN HERE>
+// None of the attacks was covered by our original HAZOP study, because we did not consider
+// the presence of an Attacker role. All HAZOP study was done on the operation of the system
+// alone.
+//
+// New hazards:
+//
+// #1
+// Guideword: Instead
+// Desgin item: Network messages are received by the intended receivers.
+// Deviation: Network messages are intercepted by an attacker.
+//
+// #2
+// Guideword: No
+// Desgin item: Network messages received by receivers are from the indicated source in the message.
+// Deviation: Network message received are not from the sources indicated in the messages.
+//
+// #3
+// Guideword: No
+// Design item: A network message received by the receiver is the same as the message sent by the source.
+// Deviant: A network message received by the receiver is not the same as the message sent by the source.
